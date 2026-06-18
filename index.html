@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan Soal UAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .subject-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Styling Khusus Area Kuis */
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn.selected {
+            background-color: #eff6ff; /* blue-50 */
+            border-color: #3b82f6; /* blue-500 */
+        }
+        .option-btn.selected .option-letter {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .q-number {
+            transition: all 0.2s;
+        }
+        .q-number.answered {
+            background-color: #10b981; /* emerald-500 */
+            color: white;
+            border-color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen pb-10">
+
+    <nav class="bg-blue-600 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold"><i class="fas fa-graduation-cap mr-2"></i> WEB Latihan UAS Pribadi Sodikin M</h1>
+            <div class="text-sm opacity-90">
+                </nav>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+
+        <!-- VIEW 1: DASHBOARD -->
+        <div id="dashboard-view" class="block animate-fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Selamat Datang!</h2>
+                <p class="text-gray-600">Pilih mata kuliah yang ingin Anda jadikan latihan hari ini. Setiap modul berisi 50 soal pilihan ganda.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" id="subject-list">
+                <!-- Kartu akan di-render dari JS -->
+            </div>
+        </div>
+
+        <!-- VIEW 2: AREA KUIS -->
+        <div id="quiz-view" class="hidden">
+            
+            <!-- Header Kuis -->
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 pb-4 gap-4">
+                <div>
+                    <button onclick="konfirmasiKembali()" class="text-blue-600 hover:text-blue-800 font-medium mb-2 inline-flex items-center transition-colors">
+                        <i class="fas fa-arrow-left mr-2"></i> Kembali
+                    </button>
+                    <h2 id="quiz-title" class="text-2xl font-bold text-gray-800 leading-tight">Nama Mata Kuliah</h2>
+                    <p id="quiz-code" class="text-gray-500 text-sm font-medium mt-1">Kode Mata Kuliah</p>
+                </div>
+                <div class="flex-shrink-0">
+                    <span id="timer-display" class="bg-white text-blue-800 text-lg font-bold px-5 py-2 rounded-lg border-2 border-blue-200 shadow-sm flex items-center shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                        <i class="far fa-clock mr-2 text-blue-500"></i> <span id="time-text">90:00</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Layout Utama Kuis (Kiri: Soal, Kanan: Grid) -->
+            <div class="flex flex-col lg:flex-row gap-6">
+                
+                <!-- KIRI: Area Pertanyaan -->
+                <div class="lg:w-3/4 flex flex-col">
+                    <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100 flex-grow relative">
+                        <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-50">
+                            <span class="bg-blue-100 text-blue-800 text-sm font-bold px-3 py-1 rounded-md" id="question-number-text">Soal No. 1</span>
+                            <button onclick="bersihkanJawaban()" class="text-sm text-red-500 hover:text-red-700 font-medium transition-colors" title="Hapus pilihan pada soal ini">
+                                <i class="fas fa-eraser mr-1"></i> Hapus Jawaban
+                            </button>
+                        </div>
+                        
+                        <!-- Teks Pertanyaan -->
+                        <div id="question-text" class="text-gray-800 text-lg md:text-xl mb-8 leading-relaxed font-medium">
+                            Memuat pertanyaan...
+                        </div>
+
+                        <!-- Opsi Jawaban -->
+                        <div id="options-container" class="space-y-3">
+                            <!-- Tombol opsi di-generate dari JS -->
+                        </div>
+                    </div>
+
+                    <!-- Tombol Navigasi Sebelumnya & Selanjutnya -->
+                    <div class="flex justify-between items-center mt-6">
+                        <button id="btn-prev" onclick="soalSebelumnya()" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm">
+                            <i class="fas fa-chevron-left mr-2"></i> Sebelumnya
+                        </button>
+                        <button id="btn-next" onclick="soalSelanjutnya()" class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold transition-all shadow-sm shadow-blue-600/30">
+                            Selanjutnya <i class="fas fa-chevron-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KANAN: Navigasi Nomor Soal -->
+                <div class="lg:w-1/4">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 sticky top-20">
+                        <h3 class="text-md font-bold text-gray-700 mb-4 flex items-center"><i class="fas fa-th mr-2 text-gray-400"></i> Navigasi Soal</h3>
+                        
+                        <!-- Grid Angka 1-50 -->
+                        <div id="question-grid" class="grid grid-cols-5 gap-2 mb-6">
+                            <!-- Button grid di-generate JS -->
+                        </div>
+                        
+                        <!-- Legenda & Tombol Selesai -->
+                        <div class="border-t border-gray-100 pt-5 mt-auto">
+                            <div class="flex items-center text-xs text-gray-600 mb-2">
+                                <div class="w-3 h-3 bg-emerald-500 rounded-sm mr-2 shadow-sm"></div> Sudah Dijawab
+                            </div>
+                            <div class="flex items-center text-xs text-gray-600 mb-6">
+                                <div class="w-3 h-3 bg-white border border-gray-300 rounded-sm mr-2"></div> Belum Dijawab
+                            </div>
+                            <button onclick="konfirmasiSelesai()" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-all shadow-sm shadow-green-600/30 flex justify-center items-center">
+                                <i class="fas fa-flag-checkered mr-2"></i> Akhiri Ujian
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL KONFIRMASI (Custom Dialog) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 transform transition-transform scale-95" id="confirm-content">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
+                    <i class="fas fa-exclamation-triangle text-2xl text-yellow-600"></i>
+                </div>
+                <h3 id="confirm-title" class="text-xl font-bold text-gray-900 mb-2">Konfirmasi</h3>
+                <p id="confirm-message" class="text-sm text-gray-500 mb-6">Apakah Anda yakin?</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="tutupModalKonfirmasi()" class="flex-1 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">Batal</button>
+                    <button id="btn-confirm-action" class="flex-1 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm">Ya, Yakin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HASIL UJIAN -->
+    <div id="result-modal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full mx-4 text-center transform transition-transform scale-95" id="result-content">
+            <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-4 ring-8 ring-green-50">
+                <i class="fas fa-trophy text-4xl text-green-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Ujian Selesai!</h2>
+            <p class="text-gray-500 text-sm mb-6">Kerja bagus! Berikut adalah statistik hasil latihan Anda.</p>
+            
+            <div class="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Nilai Akhir</div>
+                <div id="final-score" class="text-6xl font-black text-blue-600 mb-4 drop-shadow-sm">0</div>
+                
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <span class="block text-xs text-gray-500 font-medium mb-1"><i class="fas fa-check-circle text-green-500 mr-1"></i> Benar</span>
+                        <span id="correct-count" class="text-xl font-bold text-green-600">0</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                        <span class="block text-xs text-gray-500 font-medium mb-1"><i class="fas fa-times-circle text-red-500 mr-1"></i> Salah/Kosong</span>
+                        <span id="wrong-count" class="text-xl font-bold text-red-600">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button onclick="tutupHasilDanKembali()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-md shadow-blue-600/30">
+                Selesai & Kembali ke Menu Utama
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Mata Kuliah
+        const mataKuliah = [
+            { id: 'STSI4207', nama: 'Sistem Informasi Manajemen', kode: 'STSI4207', icon: 'fa-sitemap', colorClass: 'bg-blue-500' },
+            { id: 'STSI4102', nama: 'Algoritma dan Pemrograman', kode: 'STSI4102', icon: 'fa-code', colorClass: 'bg-green-500' },
+            { id: 'STSI4206', nama: 'Proses Bisnis', kode: 'STSI4206', icon: 'fa-chart-line', colorClass: 'bg-purple-500' },
+            { id: 'MKDI4203', nama: 'Kewirausahaan di Era Digital', kode: 'MKDI4203', icon: 'fa-lightbulb', colorClass: 'bg-yellow-500' }
+        ];
+
+        // State Aplikasi
+        let currentSubject = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = {}; // Menyimpan jawaban, contoh: { 0: 'A', 1: 'C', 49: 'D' }
+        let questionsData = [];
+        let timerInterval;
+        let timeLeft = 90 * 60; // 90 Menit
+
+        // DATA SOAL SISTEM INFORMASI MANAJEMEN (STSI4207)
+        const soalSIM = [
+            { id: 1, text: "Kumpulan fakta mentah yang belum diolah dan belum memiliki makna bagi penggunanya dinamakan...", options: { A: "Informasi", B: "Data", C: "Pengetahuan ( Knowledge )", D: "Kebijaksanaan ( Wisdom )" }, answer: "B" },
+            { id: 2, text: "Data yang telah diproses, diorganisasikan, dan diolah sedemikian rupa sehingga memiliki makna dan nilai guna bagi penerimanya untuk mengambil keputusan disebut...", options: { A: "Basis Data", B: "Informasi", C: "Arsip", D: "Perangkat Lunak" }, answer: "B" },
+            { id: 3, text: "Suatu sistem yang mengumpulkan, memproses, menyimpan, menganalisis, dan menyebarkan informasi untuk tujuan spesifik di dalam organisasi disebut...", options: { A: "Sistem Operasi", B: "Sistem Basis Data", C: "Sistem Informasi", D: "Sistem Pakar" }, answer: "C" },
+            { id: 4, text: "Kualitas informasi yang baik harus memenuhi beberapa kriteria. Informasi yang tersedia dan sampai kepada penerima tepat pada saat dibutuhkan (tidak kedaluwarsa) memenuhi kriteria...", options: { A: "Akurat", B: "Relevan", C: "Tepat waktu ( Timeliness )", D: "Lengkap" }, answer: "C" },
+            { id: 5, text: "Komponen utama pembentuk Sistem Informasi terdiri dari lima elemen dasar, yaitu...", options: { A: "Hardware, Software, Prosedur, Input, dan Output", B: "Hardware, Software, Data, Jaringan, dan Manusia (Brainware)", C: "CPU, Monitor, Keyboard, Mouse, dan Printer", D: "Database, Internet, E-commerce, Keamanan, dan Audit" }, answer: "B" },
+            { id: 6, text: "Sistem informasi yang berfungsi merekam dan memproses data yang berasal dari aktivitas bisnis rutin sehari-hari (tingkat operasional) seperti penjualan, penerimaan kas, dan penggajian dinamakan...", options: { A: "Decision Support System (DSS)", B: "Executive Information System (EIS)", C: "Transaction Processing System (TPS)", D: "Expert System (ES)" }, answer: "C" },
+            { id: 7, text: "Sistem Informasi Manajemen (MIS) pada umumnya dirancang untuk menyajikan laporan ringkasan berkala dan laporan pengecualian guna mendukung pengambilan keputusan bagi pihak...", options: { A: "Manajemen Tingkat Bawah (Operasional)", B: "Manajemen Tingkat Menengah (Taktis)", C: "Pemegang Saham", D: "Karyawan Pabrik" }, answer: "B" },
+            { id: 8, text: "Sistem informasi yang interaktif dan secara khusus dirancang untuk membantu manajer dalam mengambil keputusan yang bersifat semi-terstruktur maupun tidak terstruktur dengan memanfaatkan model analitis dan basis data adalah...", options: { A: "Transaction Processing System (TPS)", B: "Office Automation System (OAS)", C: "Decision Support System (DSS)", D: "Supply Chain Management (SCM)" }, answer: "C" },
+            { id: 9, text: "Sistem informasi yang dirancang khusus untuk memfasilitasi kebutuhan informasi strategis bagi jajaran manajemen puncak (top management / eksekutif) dalam bentuk dasbor grafik yang mudah dipahami disebut...", options: { A: "Executive Support System (ESS) / Executive Information System (EIS)", B: "Management Information System (MIS)", C: "Transaction Processing System (TPS)", D: "Expert System (ES)" }, answer: "A" },
+            { id: 10, text: "Keputusan manajerial yang berulang-ulang, rutin, dan prosedur penanganannya sudah memiliki standar baku (sehingga sering kali dapat diotomatisasi) dinamakan keputusan...", options: { A: "Terstruktur", B: "Tidak terstruktur", C: "Semi-terstruktur", D: "Strategis" }, answer: "A" },
+            { id: 11, text: "Program komputer yang mengatur sumber daya perangkat keras dan berfungsi sebagai jembatan atau antarmuka antara perangkat keras dan perangkat lunak aplikasi (seperti Windows, Linux, Android) disebut...", options: { A: "Application Software", B: "System Software (Sistem Operasi)", C: "Utility Software", D: "Malware" }, answer: "B" },
+            { id: 12, text: "Model penyediaan komputasi di mana perangkat lunak, ruang penyimpanan, dan kekuatan pemrosesan disediakan melalui internet (sewa pakai tanpa harus memiliki infrastruktur fisik) disebut...", options: { A: "Grid Computing", B: "Green Computing", C: "Cloud Computing (Komputasi Awan)", D: "Client-Server Computing" }, answer: "C" },
+            { id: 13, text: "Kumpulan dari berbagai data yang saling berhubungan secara logis, diorganisasikan, dan disimpan sedemikian rupa agar mudah diakses, dikelola, serta diperbarui dinamakan...", options: { A: "Spreadsheet", B: "File system", C: "Basis Data ( Database )", D: "Data Mining" }, answer: "C" },
+            { id: 14, text: "Perangkat lunak khusus yang digunakan untuk mendefinisikan, membuat, memelihara, dan mengendalikan akses terhadap basis data (seperti MySQL, Oracle, SQL Server) disebut...", options: { A: "DBMS ( Database Management System )", B: "ERP ( Enterprise Resource Planning )", C: "CRM ( Customer Relationship Management )", D: "SDLC ( System Development Life Cycle )" }, answer: "A" },
+            { id: 15, text: "Dalam model basis data relasional, sebuah kolom (atau kumpulan kolom) yang secara unik membedakan dan mengidentifikasi setiap baris ( record ) di dalam sebuah tabel dinamakan...", options: { A: "Foreign Key", B: "Secondary Key", C: "Primary Key (Kunci Primer)", D: "Index Key" }, answer: "C" },
+            { id: 16, text: "Tempat penyimpanan data sentral berukuran raksasa yang menggabungkan data historis dari berbagai sistem operasional organisasi untuk keperluan analisis dan pelaporan tingkat tinggi dinamakan...", options: { A: "Data Mart", B: "Data Warehouse", C: "Data Dictionary", D: "File Server" }, answer: "B" },
+            { id: 17, text: "Proses menemukan pola tersembunyi, tren, dan korelasi dari sekumpulan data besar ( big data ) menggunakan teknik statistik, matematika, dan kecerdasan buatan untuk memprediksi perilaku masa depan disebut...", options: { A: "Data Mining", B: "Data Cleansing", C: "Data Warehousing", D: "Data Entry" }, answer: "A" },
+            { id: 18, text: "Jaringan telekomunikasi komputer yang ruang lingkupnya sangat terbatas, biasanya hanya mencakup satu gedung kantor, kampus, atau ruangan disebut...", options: { A: "WAN ( Wide Area Network )", B: "MAN ( Metropolitan Area Network )", C: "LAN ( Local Area Network )", D: "PAN ( Personal Area Network )" }, answer: "C" },
+            { id: 19, text: "Jaringan internal sebuah perusahaan yang menggunakan teknologi internet dan hanya dapat diakses secara tertutup oleh karyawan perusahaan tersebut untuk berbagi informasi internal dinamakan...", options: { A: "Ekstranet", B: "Intranet", C: "Internet", D: "World Wide Web (WWW)" }, answer: "B" },
+            { id: 20, text: "Jika perusahaan membuka sebagian kecil akses intranet-nya kepada pihak luar secara terbatas dan aman (misalnya kepada pemasok utama atau mitra bisnis tepercaya), jaringan ini disebut...", options: { A: "Ekstranet", B: "Local Area Network (LAN)", C: "Virtual Private Network (VPN) publik", D: "Topologi Star" }, answer: "A" },
+            { id: 21, text: "Seperangkat aturan dan prosedur standar yang mengatur bagaimana data dikirimkan dan diterima oleh berbagai perangkat dalam suatu jaringan komputer dinamakan...", options: { A: "Topologi", B: "Bandwidth", C: "Protokol", D: "Router" }, answer: "C" },
+            { id: 22, text: "Segala bentuk transaksi pertukaran informasi dan bisnis (pembelian, penjualan) yang dilakukan secara elektronik melalui jaringan komputer dan internet dikenal dengan sebutan...", options: { A: "E-Government", B: "E-Commerce", C: "E-Learning", D: "E-Health" }, answer: "B" },
+            { id: 23, text: "Model e-commerce di mana perusahaan menjual barang atau jasa secara langsung kepada konsumen akhir atau individu (contoh: orang membeli sepatu di situs resmi Nike atau Tokopedia) diklasifikasikan sebagai model...", options: { A: "Business to Business (B2B)", B: "Business to Consumer (B2C)", C: "Consumer to Consumer (C2C)", D: "Consumer to Business (C2B)" }, answer: "B" },
+            { id: 24, text: "Model e-commerce di mana transaksi penjualan barang dan jasa terjadi antar sesama individu/konsumen (seperti di situs OLX atau Kaskus FJB) disebut...", options: { A: "Business to Business (B2B)", B: "Business to Consumer (B2C)", C: "Consumer to Consumer (C2C)", D: "Business to Government (B2G)" }, answer: "C" },
+            { id: 25, text: "Standar pertukaran dokumen bisnis antar-perusahaan secara elektronik dari satu komputer ke komputer lain dalam format terstruktur yang baku (misalnya pengiriman faktur tagihan digital) disebut...", options: { A: "HTML", B: "TCP/IP", C: "EDI ( Electronic Data Interchange )", D: "FTP ( File Transfer Protocol )" }, answer: "C" },
+            { id: 26, text: "Tahapan-tahapan yang harus dilalui dalam membangun sebuah sistem informasi, mulai dari perencanaan hingga pemeliharaan sistem, secara keseluruhan dikenal dengan kerangka kerja...", options: { A: "Value Chain", B: "SDLC ( System Development Life Cycle )", C: "Supply Chain Management", D: "Enterprise Architecture" }, answer: "B" },
+            { id: 27, text: "Tahap paling awal dalam SDLC di mana analis sistem melakukan wawancara, observasi, dan identifikasi untuk mengetahui apa saja yang sebenarnya dibutuhkan oleh pengguna dan masalah apa yang harus diselesaikan, dinamakan tahap...", options: { A: "Analisis Sistem (Analisis Kebutuhan)", B: "Desain Sistem", C: "Implementasi Sistem", D: "Pemeliharaan Sistem ( Maintenance )" }, answer: "A" },
+            { id: 28, text: "Kajian kelayakan yang bertujuan menilai apakah sistem informasi yang diusulkan akan memberikan manfaat yang lebih besar dibandingkan dengan biaya pembuatannya disebut studi kelayakan...", options: { A: "Teknis", B: "Operasional", C: "Ekonomi", D: "Hukum" }, answer: "C" },
+            { id: 29, text: "Metode pengembangan sistem yang melibatkan pembuatan model atau versi awal yang belum sempurna secara cepat agar pengguna dapat mencobanya, memberikan masukan, lalu memperbaikinya berulang kali hingga sesuai, dinamakan metode...", options: { A: "Waterfall", B: "Prototyping", C: "Outsourcing", D: "End-User Development" }, answer: "B" },
+            { id: 30, text: "Strategi implementasi atau konversi sistem baru di mana sistem lama dihentikan secara total pada satu waktu dan sistem baru langsung digunakan sepenuhnya pada saat itu juga, dinamakan strategi konversi...", options: { A: "Paralel ( Parallel )", B: "Langsung ( Direct Cutover )", C: "Bertahap ( Phased )", D: "Percontohan ( Pilot )" }, answer: "B" },
+            { id: 31, text: "Pendekatan konversi sistem di mana sistem lama dan sistem baru dijalankan secara bersamaan dalam periode waktu tertentu untuk memastikan sistem baru benar-benar bebas error disebut strategi...", options: { A: "Paralel ( Parallel conversion )", B: "Bertahap ( Phased conversion )", C: "Pilot ( Pilot conversion )", D: "Langsung ( Direct cutover)" }, answer: "A" },
+            { id: 32, text: "Sistem informasi terpadu yang dirancang untuk mengintegrasikan seluruh proses bisnis inti (produksi, SDM, keuangan, penjualan) ke dalam satu sistem peranti lunak dan satu basis data pusat yang sama dinamakan sistem...", options: { A: "CRM ( Customer Relationship Management )", B: "SCM ( Supply Chain Management )", C: "ERP ( Enterprise Resource Planning )", D: "KMS ( Knowledge Management System )" }, answer: "C" },
+            { id: 33, text: "Alasan utama mengapa banyak perusahaan mengadopsi sistem ERP meskipun biayanya sangat mahal adalah...", options: { A: "Agar perusahaan tidak perlu lagi memiliki pegawai", B: "Untuk memisahkan data antar departemen agar kerahasiaan absolut terjaga", C: "Menghilangkan silo (sekat) informasi antar departemen dan memastikan ketersediaan data secara real-time dan terpadu", D: "Supaya pegawai dapat bermain game dengan lancar" }, answer: "C" },
+            { id: 34, text: "Sistem informasi yang berfungsi membantu perusahaan mengelola dan mengoptimalkan aliran barang, informasi, dan keuangan dari pemasok bahan baku hingga produk sampai ke tangan pelanggan akhir disebut...", options: { A: "Supply Chain Management (SCM)", B: "Customer Relationship Management (CRM)", C: "Human Resource Information System (HRIS)", D: "Executive Support System (ESS)" }, answer: "A" },
+            { id: 35, text: "Sistem perangkat lunak yang khusus berfokus pada perekaman interaksi dengan pelanggan, analisis perilaku pelanggan, otomatisasi pemasaran, dan peningkatan layanan agar pelanggan menjadi loyal adalah...", options: { A: "ERP", B: "SCM", C: "CRM ( Customer Relationship Management )", D: "TPS" }, answer: "C" },
+            { id: 36, text: "Rombakan fundamental dan desain ulang secara radikal atas proses-proses bisnis yang sudah ada untuk mencapai perbaikan yang dramatis dalam hal biaya, kualitas, layanan, dan kecepatan disebut...", options: { A: "Total Quality Management (TQM)", B: "Business Process Reengineering (BPR)", C: "Continuous Improvement", D: "System Maintenance" }, answer: "B" },
+            { id: 37, text: "Program jahat yang menyusup ke dalam komputer tanpa izin pengguna dengan tujuan merusak data, mencuri informasi, atau melumpuhkan sistem komputer secara umum disebut...", options: { A: "Firewall", B: "Malware ( Malicious Software)", C: "Cookies", D: "Cache" }, answer: "B" },
+            { id: 38, text: "Teknik penipuan siber yang dilakukan dengan cara mengirimkan email palsu yang seolah-olah berasal dari instansi resmi (seperti bank) untuk mengelabui korban agar menyerahkan password dan data sensitif dinamakan...", options: { A: "Phishing", B: "Ransomware", C: "Denial of Service (DoS)", D: "Hacking" }, answer: "A" },
+            { id: 39, text: "Perangkat keras atau perangkat lunak yang diletakkan di antara jaringan internal perusahaan dan jaringan internet publik untuk menyaring lalu lintas data dan mencegah akses yang tidak sah disebut...", options: { A: "Router", B: "Switch", C: "Firewall", D: "Modem" }, answer: "C" },
+            { id: 40, text: "Proses mengacak data (teks asli) menggunakan algoritma matematis menjadi kode-kode rahasia ( ciphertext ) sehingga tidak bisa dibaca oleh pihak yang tidak berhak saat data ditransmisikan dinamakan...", options: { A: "Dekripsi", B: "Enkripsi ( Encryption )", C: "Kompresi data", D: "Hashing" }, answer: "B" },
+            { id: 41, text: "Rencana atau prosedur tertulis yang disiapkan perusahaan untuk memastikan bahwa infrastruktur TI dan operasi bisnis dapat segera dipulihkan apabila terjadi bencana besar (gempa bumi, banjir, kebakaran) disebut...", options: { A: "Business Process Reengineering (BPR)", B: "Disaster Recovery Plan (DRP)", C: "Strategic Information System", D: "Feasibility Study" }, answer: "B" },
+            { id: 42, text: "Penggunaan algoritma dan komputasi untuk menciptakan sistem atau mesin yang mampu meniru kecerdasan manusia (seperti belajar, mengenali pola, berbicara, dan mengambil keputusan) disebut bidang kajian...", options: { A: "Database Management", B: "Artificial Intelligence (Kecerdasan Buatan)", C: "Virtual Reality (VR)", D: "Augmented Reality (AR)" }, answer: "B" },
+            { id: 43, text: "Salah satu cabang dari Kecerdasan Buatan ( AI ) yang dirancang secara spesifik untuk memecahkan masalah kompleks dengan cara meniru penalaran dan pengetahuan seorang ahli manusia di bidang tertentu (misalnya dokter untuk mendiagnosis penyakit) dinamakan...", options: { A: "Neutral Network", B: "Fuzzy Logic", C: "Expert System (Sistem Pakar)", D: "Genetic Algorithm" }, answer: "C" },
+            { id: 44, text: "Komponen utama pembentuk sebuah Expert System (Sistem Pakar) yang berisi kumpulan fakta, aturan ( rules ), dan pengetahuan yang diinput oleh ahli/pakar manusia dinamakan...", options: { A: "Inference Engine (Mesin Inferensi)", B: "Knowledge Base (Basis Pengetahuan)", C: "User Interface", D: "Hardware" }, answer: "B" },
+            { id: 45, text: "Proses menciptakan, menangkap, menyimpan, membagikan, dan menerapkan pengetahuan dan pengalaman (baik tacit maupun explicit) yang ada di dalam pikiran karyawan agar menjadi aset intelektual perusahaan disebut...", options: { A: "Knowledge Management (Manajemen Pengetahuan)", B: "Data Warehousing", C: "Transaction Processing", D: "Information Gathering" }, answer: "A" },
+            { id: 46, text: "Pengetahuan tersembunyi yang berada di dalam pikiran individu, sangat personal, berdasarkan pengalaman empiris, dan sulit untuk diungkapkan secara tertulis (seperti insting memahat kayu atau seni negosiasi) disebut pengetahuan...", options: { A: "Explicit", B: "Tacit (Tasit)", C: "Public", D: "Structured" }, answer: "B" },
+            { id: 47, text: "Richard Mason (1986) merumuskan empat isu etika utama dalam sistem informasi yang dikenal dengan akronim PAPA. Kepanjangan dari PAPA adalah...", options: { A: "Privacy, Accuracy, Property, Accessibility", B: "Policy, Accuracy, Priority, Accountability", C: "Privacy, Authenticity, Property, Agility", D: "Piracy, Accuracy, Privacy, Accountability" }, answer: "A" },
+            { id: 48, text: "Isu etika PAPA yang menyoroti tentang hak siapa yang memiliki data dan sistem informasi (termasuk hak kekayaan intelektual, paten, dan hak cipta peranti lunak) adalah dimensi...", options: { A: "Privacy (Privasi)", B: "Accuracy (Akurasi)", C: "Property (Kepemilikan)", D: "Accessibility (Aksesibilitas)" }, answer: "C" },
+            { id: 49, text: "Tindakan mengambil atau menyalin perangkat lunak ( software ) berlisensi tanpa membayar secara sah kepada penciptanya (pembajakan peranti lunak) merupakan pelanggaran etika dan hukum yang sangat terkait dengan dimensi...", options: { A: "Privasi", B: "Akurasi", C: "Kepemilikan ( Property )", D: "Aksesibilitas" }, answer: "C" },
+            { id: 50, text: "Suatu sistem informasi dikatakan memberikan Keunggulan Kompetitif Strategis ( Strategic Competitive Advantage ) bagi perusahaan apabila sistem tersebut mampu...", options: { A: "Meningkatkan pengeluaran kertas kantor", B: "Membuat produk perusahaan menjadi lebih mahal dari pesaing", C: "Menciptakan penghalang masuk ( barrier to entry ), mengunci pelanggan, dan mengubah struktur industri sehingga perusahaan memimpin di pasar", D: "Menghambat proses komunikasi antar direktur" }, answer: "C" }
+        ];
+        
+const soalAlgoritma = [
+{
+    id: 1,
+    text: "Urutan langkah-langkah yang logis, sistematis, dan terstruktur yang disusun untuk menyelesaikan suatu masalah tertentu dinamakan...",
+    options: {
+        A: "Proses",
+        B: "Algoritma",
+        C: "Flowchart",
+        D: "Sintaksis"
+    },
+    answer: "B"
+},
+{
+    id: 2,
+    text: "Menurut ilmuwan komputer Donald Knuth, sebuah algoritma harus selalu memiliki kondisi akhir atau berhenti setelah memproses sejumlah langkah. Sifat ini dikenal dengan istilah...",
+    options: {
+        A: "Definiteness",
+        B: "Effectiveness",
+        C: "Finiteness",
+        D: "Output"
+    },
+    answer: "C"
+},
+{
+    id: 3,
+    text: "Representasi grafis atau diagram visual yang menggunakan simbol-simbol standar untuk menggambarkan alur logika dari sebuah algoritma atau program disebut...",
+    options: {
+        A: "Pseudocode",
+        B: "Source Code",
+        C: "Data Flow Diagram",
+        D: "Flowchart"
+    },
+    answer: "D"
+},
+{
+    id: 4,
+    text: "Pada pembuatan flowchart, simbol yang berbentuk belah ketupat (diamond) berfungsi untuk menyatakan langkah...",
+    options: {
+        A: "Proses atau perhitungan",
+        B: "Percabangan atau pengambilan keputusan (Decision)",
+        C: "Awal atau akhir algoritma",
+        D: "Input atau Output data"
+    },
+    answer: "B"
+},
+{
+    id: 5,
+    text: "Sedangkan simbol flowchart yang berbentuk jajar genjang digunakan untuk menunjukkan proses...",
+    options: {
+        A: "Input dan Output",
+        B: "Penyimpanan data",
+        C: "Konektor halaman",
+        D: "Looping (Perulangan)"
+    },
+    answer: "A"
+},
+{
+    id: 6,
+    text: "Teks deskriptif yang ditulis menyerupai kode bahasa pemrograman tingkat tinggi tetapi lebih mudah dipahami oleh manusia dinamakan...",
+    options: {
+        A: "Object Code",
+        B: "Machine Code",
+        C: "Pseudocode",
+        D: "Flowchart"
+    },
+    answer: "C"
+},
+{
+    id: 7,
+    text: "Tipe data dasar yang digunakan untuk menyimpan nilai bilangan bulat (tanpa pecahan) dalam pemrograman adalah...",
+    options: {
+        A: "Float",
+        B: "Integer",
+        C: "String",
+        D: "Boolean"
+    },
+    answer: "B"
+},
+{
+    id: 8,
+    text: "Tipe data yang hanya dapat bernilai Benar (True) atau Salah (False) adalah tipe data...",
+    options: {
+        A: "Character",
+        B: "Double",
+        C: "Boolean",
+        D: "Array"
+    },
+    answer: "C"
+},
+{
+    id: 9,
+    text: "Aturan penamaan sebuah variabel (identifier) dalam sebagian besar bahasa pemrograman adalah, kecuali...",
+    options: {
+        A: "Tidak boleh diawali dengan angka",
+        B: "Boleh mengandung huruf dan angka",
+        C: "Tidak boleh mengandung spasi (karakter kosong)",
+        D: "Boleh menggunakan kata kunci bawaan (reserved words seperti if, for)"
+    },
+    answer: "D"
+},
+{
+    id: 10,
+    text: "Tempat penyimpanan sementara di dalam memori komputer yang nilainya dapat berubah-ubah selama program dijalankan dinamakan...",
+    options: {
+        A: "Konstanta",
+        B: "Variabel",
+        C: "Fungsi",
+        D: "Prosedur"
+    },
+    answer: "B"
+},
+{
+    id: 11,
+    text: "Nilai yang tetap dan tidak berubah selama program dijalankan disebut...",
+    options: {
+        A: "Variabel",
+        B: "Parameter",
+        C: "Konstanta",
+        D: "Operator"
+    },
+    answer: "C"
+},
+{
+    id: 12,
+    text: "Operator yang digunakan untuk memberikan nilai ke dalam sebuah variabel adalah...",
+    options: {
+        A: "==",
+        B: "=",
+        C: "!=",
+        D: "+"
+    },
+    answer: "B"
+},
+{
+    id: 13,
+    text: "Operator perbandingan yang digunakan untuk memeriksa apakah dua nilai sama adalah...",
+    options: {
+        A: "=",
+        B: "!=",
+        C: "==",
+        D: ">="
+    },
+    answer: "C"
+},
+{
+    id: 14,
+    text: "Struktur kontrol yang digunakan untuk menjalankan perintah berdasarkan suatu kondisi tertentu adalah...",
+    options: {
+        A: "Sequence",
+        B: "Selection",
+        C: "Iteration",
+        D: "Array"
+    },
+    answer: "B"
+},
+{
+    id: 15,
+    text: "Pernyataan yang umum digunakan untuk percabangan dalam pemrograman adalah...",
+    options: {
+        A: "for",
+        B: "while",
+        C: "if-else",
+        D: "break"
+    },
+    answer: "C"
+},
+{
+    id: 16,
+    text: "Struktur perulangan yang digunakan ketika jumlah pengulangan sudah diketahui sebelumnya adalah...",
+    options: {
+        A: "if",
+        B: "switch",
+        C: "for",
+        D: "goto"
+    },
+    answer: "C"
+},
+{
+    id: 17,
+    text: "Struktur perulangan yang akan terus berjalan selama kondisi bernilai benar adalah...",
+    options: {
+        A: "while",
+        B: "if",
+        C: "case",
+        D: "function"
+    },
+    answer: "A"
+},
+{
+    id: 18,
+    text: "Kumpulan elemen data yang bertipe sama dan disimpan menggunakan satu nama variabel disebut...",
+    options: {
+        A: "Record",
+        B: "Pointer",
+        C: "Array",
+        D: "Class"
+    },
+    answer: "C"
+},
+{
+    id: 19,
+    text: "Indeks array pada sebagian besar bahasa pemrograman dimulai dari...",
+    options: {
+        A: "0",
+        B: "1",
+        C: "-1",
+        D: "2"
+    },
+    answer: "A"
+},
+{
+    id: 20,
+    text: "Subprogram yang dapat menerima parameter dan mengembalikan nilai disebut...",
+    options: {
+        A: "Prosedur",
+        B: "Variabel",
+        C: "Array",
+        D: "Fungsi"
+    },
+    answer: "D"
+},
+{
+    id: 21,
+    text: "Sedangkan perintah yang digunakan untuk melewati/melompati iterasi yang sedang berjalan dan langsung melanjutkan ke iterasi berikutnya dinamakan perintah...",
+    options: {
+        A: "CONTINUE",
+        B: "BREAK",
+        C: "EXIT",
+        D: "STOP"
+    },
+    answer: "A"
+},
+{
+    id: 22,
+    text: "Kumpulan variabel yang memiliki tipe data yang sama dan menggunakan nama yang sama, serta dibedakan berdasarkan indeksnya, dinamakan...",
+    options: {
+        A: "Record",
+        B: "Pointer",
+        C: "Array (Larik)",
+        D: "String"
+    },
+    answer: "C"
+},
+{
+    id: 23,
+    text: "Dalam sebagian besar bahasa pemrograman (seperti C, C++, dan Java), indeks awal untuk mengakses elemen pertama dari sebuah array selalu dimulai dari angka...",
+    options: {
+        A: "1",
+        B: "0",
+        C: "-1",
+        D: "2"
+    },
+    answer: "B"
+},
+{
+    id: 24,
+    text: "Jika dideklarasikan sebuah array bilangan bulat int Nilai[5];, maka indeks batas maksimal yang sah untuk memanggil elemen terakhir dari array tersebut adalah...",
+    options: {
+        A: "5",
+        B: "6",
+        C: "4",
+        D: "0"
+    },
+    answer: "C"
+},
+{
+    id: 25,
+    text: "Sebuah array dua dimensi sering kali divisualisasikan dalam bentuk matematis berupa...",
+    options: {
+        A: "Matriks (memiliki baris dan kolom)",
+        B: "Garis lurus",
+        C: "Kubus",
+        D: "Lingkaran"
+    },
+    answer: "A"
+},
+{
+    id: 26,
+    text: "Blok kode program terpisah yang dirancang untuk menjalankan tugas spesifik dan dapat dipanggil berulang kali dari bagian program utama disebut pemrograman...",
+    options: {
+        A: "Linier",
+        B: "Spageti",
+        C: "Modular (Fungsi / Prosedur)",
+        D: "Berorientasi Objek murni"
+    },
+    answer: "C"
+},
+{
+    id: 27,
+    text: "Sub-program atau modul yang mengembalikan (return) sebuah nilai akhir ke program pemanggilnya disebut...",
+    options: {
+        A: "Prosedur",
+        B: "Fungsi (Function)",
+        C: "Konstanta",
+        D: "Parameter"
+    },
+    answer: "B"
+},
+{
+    id: 28,
+    text: "Sedangkan sub-program yang hanya menjalankan sekumpulan perintah tanpa mengembalikan nilai (dalam bahasa C sering disebut void) secara konseptual disebut...",
+    options: {
+        A: "Fungsi",
+        B: "Tipe Data",
+        C: "Prosedur (Procedure)",
+        D: "Algoritma Utama"
+    },
+    answer: "C"
+},
+{
+    id: 29,
+    text: "Variabel yang dideklarasikan di dalam tanda kurung saat mendefinisikan sebuah fungsi dan bertugas menerima nilai yang dikirim dari pemanggil dinamakan...",
+    options: {
+        A: "Parameter Formal",
+        B: "Parameter Aktual",
+        C: "Variabel Global",
+        D: "Konstanta"
+    },
+    answer: "A"
+},
+{
+    id: 30,
+    text: "Metode pengiriman parameter dari pemanggil ke fungsi di mana yang dikirim hanyalah salinan nilainya saja (sehingga jika nilai diubah di dalam fungsi, nilai variabel asli di luar fungsi tidak ikut berubah) disebut...",
+    options: {
+        A: "Pass by Value",
+        B: "Pass by Reference",
+        C: "Pass by Address",
+        D: "Pass by Name"
+    },
+    answer: "A"
+},
+{
+    id: 31,
+    text: "Sebaliknya, metode pengiriman parameter dengan mengirimkan alamat memori variabel (biasanya menggunakan pointer), sehingga perubahan nilai di dalam fungsi akan memengaruhi nilai variabel aslinya, disebut...",
+    options: {
+        A: "Pass by Value",
+        B: "Pass by Reference",
+        C: "Pass by Local",
+        D: "Pass by Default"
+    },
+    answer: "B"
+},
+{
+    id: 32,
+    text: "Ruang lingkup (scope) sebuah variabel yang dideklarasikan di luar semua fungsi sehingga dapat diakses dan diubah oleh seluruh fungsi dalam program tersebut dinamakan variabel...",
+    options: {
+        A: "Lokal",
+        B: "Statis",
+        C: "Global",
+        D: "Dinamis"
+    },
+    answer: "C"
+},
+{
+    id: 33,
+    text: "Variabel yang dideklarasikan di dalam suatu blok fungsi atau blok perulangan dan hanya dikenali di dalam blok tersebut dinamakan variabel...",
+    options: {
+        A: "Global",
+        B: "Konstan",
+        C: "Lokal",
+        D: "Referensi"
+    },
+    answer: "C"
+},
+{
+    id: 34,
+    text: "Sebuah teknik di mana suatu fungsi memanggil dirinya sendiri secara terus-menerus hingga mencapai kondisi tertentu dinamakan konsep...",
+    options: {
+        A: "Iterasi",
+        B: "Rekursi (Recursive)",
+        C: "Enkapsulasi",
+        D: "Polimorfisme"
+    },
+    answer: "B"
+},
+{
+    id: 35,
+    text: "Syarat mutlak yang harus dimiliki oleh sebuah fungsi rekursif agar tidak terjadi perulangan panggilan yang tak terhingga (infinite loop / stack overflow) adalah adanya...",
+    options: {
+        A: "Tipe data Array",
+        B: "Basis Rekursi (Kondisi Berhenti / Base Case)",
+        C: "Variabel Global",
+        D: "Looping FOR"
+    },
+    answer: "B"
+},
+{
+    id: 36,
+    text: "Proses menyusun kembali sekumpulan data yang acak menjadi data yang terurut berdasarkan aturan tertentu (dari kecil ke besar atau sebaliknya) disebut proses...",
+    options: {
+        A: "Searching",
+        B: "Sorting (Pengurutan)",
+        C: "Merging",
+        D: "Filtering"
+    },
+    answer: "B"
+},
+{
+    id: 37,
+    text: "Algoritma pengurutan yang bekerja dengan cara membandingkan elemen yang bersebelahan dan menukarnya jika urutannya salah, dan terus diulang hingga tidak ada lagi elemen yang ditukar, dinamakan...",
+    options: {
+        A: "Selection Sort",
+        B: "Insertion Sort",
+        C: "Bubble Sort (Pengurutan Gelembung)",
+        D: "Quick Sort"
+    },
+    answer: "C"
+},
+{
+    id: 38,
+    text: "Algoritma pengurutan yang bekerja dengan mencari nilai terkecil dari array, kemudian menukarkannya dengan elemen pada posisi pertama, lalu mencari nilai terkecil kedua dan ditukar ke posisi kedua, dan seterusnya, dinamakan...",
+    options: {
+        A: "Selection Sort",
+        B: "Bubble Sort",
+        C: "Merge Sort",
+        D: "Insertion Sort"
+    },
+    answer: "A"
+},
+{
+    id: 39,
+    text: "Pengurutan data dari nilai yang paling besar menuju ke nilai yang paling kecil (Z ke A, atau 9 ke 1) disebut pengurutan secara...",
+    options: {
+        A: "Ascending",
+        B: "Descending",
+        C: "Randomize",
+        D: "Sequential"
+    },
+    answer: "B"
+},
+{
+    id: 40,
+    text: "Proses mencari keberadaan atau letak suatu data tertentu dari sekumpulan data dinamakan...",
+    options: {
+        A: "Sorting",
+        B: "Parsing",
+        C: "Searching (Pencarian)",
+        D: "Tracing"
+    },
+    answer: "C"
+},
+{
+    id: 41,
+    text: "Algoritma pencarian yang menelusuri data satu per satu secara berurutan mulai dari elemen pertama hingga data ditemukan atau hingga elemen terakhir dicapai, disebut algoritma...",
+    options: {
+        A: "Binary Search",
+        B: "Hash Search",
+        C: "Sequential Search (Pencarian Linier)",
+        D: "Interpolation Search"
+    },
+    answer: "C"
+},
+{
+    id: 42,
+    text: "Algoritma pencarian yang jauh lebih cepat karena selalu membagi dua area pencarian pada setiap langkahnya dinamakan Binary Search. Syarat mutlak agar data dapat dicari dengan Binary Search adalah...",
+    options: {
+        A: "Data harus berupa bilangan bulat",
+        B: "Data harus berjumlah genap",
+        C: "Data harus sudah dalam keadaan terurut (Sorted)",
+        D: "Data harus tersimpan di dalam Harddisk"
+    },
+    answer: "C"
+},
+{
+    id: 43,
+    text: "Kumpulan karakter yang membentuk suatu kata atau kalimat (misalnya Hello World) di dalam pemrograman disimpan dalam tipe data...",
+    options: {
+        A: "Integer",
+        B: "String",
+        C: "Boolean",
+        D: "Float"
+    },
+    answer: "B"
+},
+{
+    id: 44,
+    text: "Operasi penggabungan dua atau lebih variabel String menjadi satu String baru disebut dengan operasi...",
+    options: {
+        A: "Comparison",
+        B: "Concatenation",
+        C: "Substring",
+        D: "Parsing"
+    },
+    answer: "B"
+},
+{
+    id: 45,
+    text: "Tipe data bentukan (terstruktur) yang mampu menyimpan berbagai variabel dengan tipe data yang berbeda-beda dalam satu kesatuan nama blok dinamakan...",
+    options: {
+        A: "Array",
+        B: "String",
+        C: "Record / Struct",
+        D: "Float"
+    },
+    answer: "C"
+},
+{
+    id: 46,
+    text: "Kesalahan penulisan aturan tata bahasa program (misalnya lupa memberikan tanda titik koma pada akhir baris atau salah mengetikkan kata kunci) sehingga program tidak bisa di-compile, disebut jenis kesalahan...",
+    options: {
+        A: "Logical Error",
+        B: "Runtime Error",
+        C: "Syntax Error",
+        D: "Fatal Error"
+    },
+    answer: "C"
+},
+{
+    id: 47,
+    text: "Kesalahan di mana program berhasil dijalankan tanpa ada pemberitahuan error, namun menghasilkan output atau perhitungan yang salah dan tidak sesuai harapan disebut jenis kesalahan...",
+    options: {
+        A: "Syntax Error",
+        B: "Logical Error (Kesalahan Logika)",
+        C: "Runtime Error",
+        D: "Compile Error"
+    },
+    answer: "B"
+},
+{
+    id: 48,
+    text: "Kesalahan yang menyebabkan program tiba-tiba berhenti atau crash pada saat sedang berjalan (dieksekusi), misalnya karena pembagian dengan angka nol (0) atau memori penuh, dinamakan...",
+    options: {
+        A: "Syntax Error",
+        B: "Warning Error",
+        C: "Runtime Error",
+        D: "Logical Error"
+    },
+    answer: "C"
+},
+{
+    id: 49,
+    text: "Program sistem penerjemah yang membaca, menerjemahkan, sekaligus langsung mengeksekusi kode sumber program baris per baris disebut...",
+    options: {
+        A: "Compiler",
+        B: "Interpreter",
+        C: "Linker",
+        D: "Assembler"
+    },
+    answer: "B"
+},
+{
+    id: 50,
+    text: "Sebuah kriteria untuk mengukur tingkat efisiensi suatu algoritma berdasarkan berapa lama waktu yang dibutuhkan untuk menyelesaikan eksekusi (biasanya dinotasikan dalam Big-O) dikenal dengan sebutan analisis...",
+    options: {
+        A: "Kompleksitas Waktu (Time Complexity)",
+        B: "Kompleksitas Ruang (Space Complexity)",
+        C: "Debugging",
+        D: "Pemeliharaan (Maintenance)"
+    },
+    answer: "A"
+}
+];
+const soalProsesBisnis = [
+    {
+        id: 1,
+        text: "Kumpulan aktivitas atau pekerjaan terstruktur yang saling berelasi, yang mengubah sekumpulan input menjadi output yang memberikan nilai tambah (value) bagi pelanggan, dinamakan...",
+        options: { A: "Fungsi Bisnis", B: "Proses Bisnis", C: "Struktur Organisasi", D: "Analisis Sistem" },
+        answer: "B"
+    },
+    {
+        id: 2,
+        text: "Salah satu karakteristik utama dari sebuah proses bisnis yang membedakannya dengan fungsi bisnis tradisional adalah sifatnya yang melintasi berbagai departemen di dalam organisasi. Sifat ini dikenal dengan istilah...",
+        options: { A: "Cross-functional (Lintas Fungsi)", B: "Hierarchical (Hierarkis)", C: "Functional silo (Silo fungsional)", D: "Top-down" },
+        answer: "A"
+    },
+    {
+        id: 3,
+        text: "Dalam arsitektur proses bisnis, proses yang secara langsung berhubungan dengan penciptaan nilai tambah bagi pelanggan eksternal dan merupakan bisnis utama perusahaan (seperti produksi dan penjualan) diklasifikasikan sebagai...",
+        options: { A: "Proses Manajemen", B: "Proses Inti", C: "Proses Pendukung", D: "Proses Outsourcing" },
+        answer: "B"
+    },
+    {
+        id: 4,
+        text: "Di bawah ini yang merupakan contoh dari Proses Pendukung (Support Process) dalam sebuah perusahaan manufaktur adalah...",
+        options: { A: "Perakitan barang di pabrik", B: "Pengiriman barang ke pelanggan", C: "Pengelolaan sumber daya manusia (rekrutmen dan penggajian)", D: "Penjualan barang oleh tim marketing" },
+        answer: "C"
+    },
+    {
+        id: 5,
+        text: "Sebuah proses standar dalam bisnis yang dimulai dari pelanggan melakukan pemesanan, perusahaan memproses pesanan, mengirimkan barang, hingga menerima pembayaran dari pelanggan dikenal dengan istilah siklus...",
+        options: { A: "Procure-to-Pay", B: "Order-to-Cash", C: "Issue-to-Resolution", D: "Plan-to-Produce" },
+        answer: "B"
+    },
+    {
+        id: 6,
+        text: "Fenomena di mana setiap departemen dalam suatu perusahaan hanya fokus pada target dan tugas internal departemennya sendiri tanpa mempedulikan aliran kerja antar departemen, sering kali menyebabkan inefisiensi. Fenomena ini disebut...",
+        options: { A: "Cross-functional integration", B: "Silo Effect (Efek Silo)", C: "Enterprise Resource Planning", D: "Business Process Reengineering" },
+        answer: "B"
+    },
+    {
+        id: 7,
+        text: "Pendekatan manajemen yang berfokus pada identifikasi, penemuan, analisis, desain ulang, implementasi, dan pemantauan proses bisnis untuk meningkatkan kinerja perusahaan secara berkelanjutan disebut...",
+        options: { A: "Customer Relationship Management (CRM)", B: "Business Process Management (BPM)", C: "Software Development Life Cycle (SDLC)", D: "Supply Chain Management (SCM)" },
+        answer: "B"
+    },
+    {
+        id: 8,
+        text: "Seseorang atau pihak yang memiliki tanggung jawab penuh atas kinerja sebuah proses bisnis dari awal hingga akhir (end-to-end), serta berwenang mengusulkan perbaikan pada proses tersebut dinamakan...",
+        options: { A: "Process Owner (Pemilik Proses)", B: "Process Analyst", C: "System Developer", D: "Chief Executive Officer (CEO)" },
+        answer: "A"
+    },
+    {
+        id: 9,
+        text: "Tahap pertama dalam siklus hidup Manajemen Proses Bisnis (BPM Lifecycle) di mana organisasi memetakan seluruh proses bisnis yang ada dan memprioritaskan proses mana yang perlu dikelola atau diperbaiki dinamakan tahap...",
+        options: { A: "Process Discovery", B: "Process Identification", C: "Process Analysis", D: "Process Implementation" },
+        answer: "B"
+    },
+    {
+        id: 10,
+        text: "Tahap dalam BPM Lifecycle di mana tim analis melakukan pemodelan dan mendokumentasikan keadaan proses bisnis yang sedang berjalan saat ini (As-Is Model) dinamakan tahap...",
+        options: { A: "Process Identification", B: "Process Redesign", C: "Process Discovery", D: "Process Monitoring" },
+        answer: "C"
+    },
+    {
+        id: 11,
+        text: "Standar notasi grafis internasional yang paling luas digunakan saat ini untuk memodelkan aliran kerja (workflow) dalam proses bisnis adalah...",
+        options: { A: "UML", B: "DFD", C: "BPMN", D: "ERD" },
+        answer: "C"
+    },
+    {
+        id: 12,
+        text: "Dalam notasi BPMN, elemen yang digunakan untuk merepresentasikan sebuah pekerjaan, tindakan, atau tugas tunggal yang dilakukan di dalam proses bisnis disebut...",
+        options: { A: "Event", B: "Activity / Task", C: "Gateway", D: "Data Object" },
+        answer: "B"
+    },
+    {
+        id: 13,
+        text: "Simbol grafis dalam BPMN yang direpresentasikan dengan bentuk lingkaran dan berfungsi untuk menunjukkan sesuatu yang terjadi (trigger) selama siklus proses (seperti permulaan atau akhir proses) adalah...",
+        options: { A: "Gateway", B: "Activity", C: "Event", D: "Sequence Flow" },
+        answer: "C"
+    },
+    {
+        id: 14,
+        text: "Dalam BPMN, elemen yang berfungsi mengontrol percabangan atau penggabungan arah aliran (flow) proses (digambarkan dengan simbol belah ketupat/diamond) disebut...",
+        options: { A: "Event", B: "Gateway", C: "Pool", D: "Annotation" },
+        answer: "B"
+    },
+    {
+        id: 15,
+        text: "Suatu gateway dalam BPMN di mana aliran proses akan terpecah, namun hanya boleh memilih salah satu jalur alternatif yang memenuhi syarat (misal: jika pesanan disetujui lewat jalur A, jika ditolak lewat jalur B) disebut...",
+        options: { A: "Parallel Gateway (AND)", B: "Exclusive Gateway (XOR)", C: "Inclusive Gateway (OR)", D: "Complex Gateway" },
+        answer: "B"
+    },
+    {
+        id: 16,
+        text: "Sebaliknya, jika suatu gateway digunakan untuk memecah aliran proses sehingga beberapa jalur aktivitas dapat dieksekusi secara bersamaan (paralel), gateway yang digunakan adalah...",
+        options: { A: "Exclusive Gateway (XOR)", B: "Parallel Gateway (AND)", C: "Event-Based Gateway", D: "Inclusive Gateway (OR)" },
+        answer: "B"
+    },
+    {
+        id: 17,
+        text: "Elemen pemodelan dalam BPMN yang digunakan untuk mengelompokkan aktivitas berdasarkan partisipan, peran (role), atau departemen yang bertanggung jawab mengeksekusi aktivitas tersebut dinamakan...",
+        options: { A: "Swimlanes (Pools dan Lanes)", B: "Artifacts", C: "Message Flows", D: "Data Stores" },
+        answer: "A"
+    },
+    {
+        id: 18,
+        text: "Garis penghubung dalam BPMN yang digambarkan dengan anak panah lurus tidak terputus untuk menunjukkan urutan pelaksanaan aktivitas dalam satu proses (satu Pool) disebut...",
+        options: { A: "Message Flow", B: "Association", C: "Sequence Flow", D: "Data Flow" },
+        answer: "C"
+    },
+    {
+        id: 19,
+        text: "Garis putus-putus dengan mata panah terbuka dalam BPMN yang digunakan untuk menunjukkan pertukaran pesan atau komunikasi antara dua entitas (partisipan) yang berada di Pool yang berbeda dinamakan...",
+        options: { A: "Sequence Flow", B: "Message Flow", C: "Association", D: "Dependency" },
+        answer: "B"
+    },
+    {
+        id: 20,
+        text: "Salah satu tujuan utama dari pemodelan proses bisnis (As-Is) adalah untuk...",
+        options: { A: "Memperumit pekerjaan karyawan", B: "Menciptakan aplikasi basis data secara otomatis", C: "Memahami secara visual dan transparan bagaimana pekerjaan sebenarnya dilakukan agar dapat diidentifikasi kelemahannya", D: "Menghitung besaran pajak perusahaan" },
+        answer: "C"
+    },
+    {
+        id: 21,
+        text: "Pada tahap Process Analysis, kegiatan memisahkan langkah-langkah dalam proses menjadi aktivitas yang memberikan nilai tambah (Value-Adding), memberikan nilai tambah bisnis (Business Value-Adding), dan aktivitas yang tidak bernilai tambah (Non-Value-Adding) disebut analisis...",
+        options: { A: "Kuantitatif", B: "Value-Added Analysis", C: "Analisis Pareto", D: "Analisis Root-Cause" },
+        answer: "B"
+    },
+    {
+        id: 22,
+        text: "Pekerjaan yang jika dihilangkan tidak akan memengaruhi kualitas produk di mata pelanggan maupun kelancaran operasional perusahaan secara hukum (merupakan pemborosan/waste murni), dikategorikan sebagai aktivitas...",
+        options: { A: "Value-Adding (VA)", B: "Business Value-Adding (BVA)", C: "Non-Value-Adding (NVA)", D: "Core Process" },
+        answer: "C"
+    },
+    {
+        id: 23,
+        text: "Diagram kualitatif yang berbentuk seperti tulang ikan, yang digunakan untuk mengidentifikasi dan mengkategorikan akar penyebab (root causes) dari suatu masalah disebut...",
+        options: { A: "Pareto Chart", B: "Fishbone Diagram (Diagram Ishikawa)", C: "Scatter Plot", D: "Gantt Chart" },
+        answer: "B"
+    },
+    {
+        id: 24,
+        text: "Analisis masalah yang didasarkan pada prinsip 80/20, yang menyatakan bahwa 80% dari masalah yang terjadi biasanya disebabkan oleh 20% penyebab utama, disebut analisis...",
+        options: { A: "SWOT", B: "Ishikawa", C: "Pareto", D: "Root-Cause" },
+        answer: "C"
+    },
+    {
+        id: 25,
+        text: "Waktu total yang dibutuhkan untuk menyelesaikan seluruh rangkaian satu siklus proses bisnis dari awal hingga akhir (termasuk waktu tunggu dan waktu pemrosesan) disebut...",
+        options: { A: "Processing Time", B: "Waiting Time", C: "Cycle Time", D: "Idle Time" },
+        answer: "C"
+    },
+    {
+        id: 26,
+        text: "Titik penumpukan pekerjaan di mana kapasitas sebuah tahap (aktivitas) lebih kecil daripada beban kerja yang masuk kepadanya, sehingga memperlambat keseluruhan proses, disebut...",
+        options: { A: "Deadlock", B: "Bottleneck", C: "Throughput", D: "Capacity" },
+        answer: "B"
+    },
+    {
+        id: 27,
+        text: "Pendekatan perbaikan proses bisnis yang diusulkan oleh Michael Hammer, yang menekankan pada perubahan proses secara radikal, fundamental, dan dramatis dengan memanfaatkan Teknologi Informasi dinamakan...",
+        options: { A: "Continuous Improvement", B: "Kaizen", C: "Total Quality Management (TQM)", D: "Business Process Reengineering (BPR)" },
+        answer: "D"
+    },
+    {
+        id: 28,
+        text: "Sebaliknya, pendekatan perbaikan proses yang berasal dari Jepang yang menekankan pada peningkatan kualitas secara bertahap, berkesinambungan, dan melibatkan partisipasi seluruh level karyawan setiap hari dinamakan...",
+        options: { A: "Reengineering", B: "Kaizen", C: "Disruptive Innovation", D: "Automation" },
+        answer: "B"
+    },
+    {
+        id: 29,
+        text: "Konsep perbaikan proses (Lean Management) sangat berfokus pada penghapusan segala bentuk aktivitas yang tidak memberikan nilai tambah atau pemborosan. Dalam bahasa Jepang, pemborosan ini diistilahkan sebagai...",
+        options: { A: "Poka-yoke", B: "Kanban", C: "Muda", D: "Heijunka" },
+        answer: "C"
+    },
+    {
+        id: 30,
+        text: "Metodologi peningkatan kualitas proses yang sangat berfokus pada pengurangan variasi dan meminimalkan tingkat kecacatan produk hingga mendekati nol adalah...",
+        options: { A: "Lean", B: "Six Sigma", C: "Balanced Scorecard", D: "Agile" },
+        answer: "B"
+    },
+    {
+        id: 31,
+        text: "Model desain usulan proses bisnis baru yang telah diperbaiki (setelah mengeliminasi kekurangan dari model saat ini) dinamakan model...",
+        options: { A: "As-Is", B: "To-Be", C: "Entity Relationship", D: "Use Case" },
+        answer: "B"
+    },
+    {
+        id: 32,
+        text: "Penggunaan perangkat lunak atau teknologi untuk mengeksekusi sebagian atau seluruh aktivitas di dalam proses bisnis secara mandiri tanpa campur tangan manusia dinamakan...",
+        options: { A: "Process Automation", B: "Process Redesign", C: "Process Discovery", D: "Manual Labor" },
+        answer: "A"
+    },
+    {
+        id: 33,
+        text: "Integrasi proses bisnis berskala besar lintas departemen dalam sebuah perusahaan modern saat ini umumnya dimediasi dan didukung secara teknologi oleh Sistem Perencanaan Sumber Daya Perusahaan yang disebut...",
+        options: { A: "CRM", B: "SCM", C: "ERP", D: "DSS" },
+        answer: "C"
+    },
+    {
+        id: 34,
+        text: "Keuntungan utama penerapan sistem ERP terhadap proses bisnis suatu perusahaan adalah...",
+        options: { A: "Memperkuat batas-batas silo antar departemen", B: "Menyediakan database tunggal dan terpusat yang memperlancar aliran data secara real-time", C: "Mengurangi jumlah perangkat keras", D: "Menghapus hierarki pimpinan" },
+        answer: "B"
+    },
+    {
+        id: 35,
+        text: "Proses Procure-to-Pay (Pengadaan hingga Pembayaran) biasanya dimulai dengan...",
+        options: { A: "Menerima tagihan dari pemasok", B: "Membayar tagihan", C: "Menerima barang di gudang", D: "Munculnya permintaan pembelian barang dari departemen internal (Purchase Requisition)" },
+        answer: "D"
+    },
+    {
+        id: 36,
+        text: "Dokumen resmi yang diterbitkan oleh perusahaan dan dikirimkan kepada pihak pemasok (supplier) sebagai bentuk komitmen untuk membeli barang/jasa disebut...",
+        options: { A: "Purchase Order (PO)", B: "Purchase Requisition (PR)", C: "Sales Order (SO)", D: "Invoice" },
+        answer: "A"
+    },
+    {
+        id: 37,
+        text: "Dalam siklus Order-to-Cash, aktivitas setelah perusahaan berhasil memproses pesanan dan mempacking barang untuk pelanggan adalah...",
+        options: { A: "Mencari bahan baku", B: "Mengirimkan barang (Delivery)", C: "Menagih pembayaran (Billing/Invoicing)", D: "Merakit produk" },
+        answer: "B"
+    },
+    {
+        id: 38,
+        text: "Proses bisnis yang bertujuan untuk merencanakan, melaksanakan, dan mengontrol aliran material, informasi, serta keuangan secara efisien mulai dari supplier bahan baku hingga ke konsumen akhir dikelola melalui sistem...",
+        options: { A: "Supply Chain Management (SCM)", B: "Customer Relationship Management (CRM)", C: "Human Resource Information System (HRIS)", D: "Business Intelligence (BI)" },
+        answer: "A"
+    },
+    {
+        id: 39,
+        text: "Ukuran kuantitatif yang digunakan oleh perusahaan untuk mengevaluasi tingkat keberhasilan atau kinerja dari sebuah proses bisnis dalam mencapai sasaran strategisnya dinamakan...",
+        options: { A: "Return on Investment (ROI)", B: "Key Performance Indicator (KPI)", C: "Service Level Agreement (SLA)", D: "Cost Benefit Analysis" },
+        answer: "B"
+    },
+    {
+        id: 40,
+        text: "Otomatisasi proses bisnis yang sebelumnya berbasis dokumen kertas menjadi alur kerja dokumen elektronik persetujuan (digital approval) akan secara drastis memperbaiki metrik proses pada bagian...",
+        options: { A: "Cycle time", B: "Biaya bahan baku mesin", C: "Pajak pendapatan perusahaan", D: "Struktur organisasi eksekutif" },
+        answer: "A"
+    },
+    {
+        id: 41,
+        text: "Dalam pemodelan BPMN, artefak tambahan yang dapat ditempelkan pada suatu aktivitas atau objek untuk memberikan penjelasan berupa teks bebas bagi pembaca model disebut...",
+        options: { A: "Text Annotation", B: "Message Flow", C: "Intermediate Event", D: "DataObject" },
+        answer: "A"
+    },
+    {
+        id: 42,
+        text: "Aktivitas mengevaluasi tingkat kepatuhan (compliance) jalannya proses bisnis aktual dibandingkan dengan model proses bisnis standar (SOP) dinamakan tahap...",
+        options: { A: "Process Design", B: "Process Discovery", C: "Process Monitoring and Controlling", D: "Process Identification" },
+        answer: "C"
+    },
+    {
+        id: 43,
+        text: "Sistem perangkat lunak khusus yang dirancang secara spesifik untuk membangun, memodelkan, mengelola, menjalankan, dan memantau aliran proses bisnis dalam perusahaan dinamakan...",
+        options: { A: "DBMS", B: "BPMS", C: "IDE", D: "OS" },
+        answer: "B"
+    },
+    {
+        id: 44,
+        text: "Dalam teknik perbaikan proses bisnis, prinsip Eliminasi (Eliminate) dalam kerangka kerja penyederhanaan proses bertujuan untuk...",
+        options: { A: "Mengotomatisasi seluruh mesin", B: "Membuang langkah-langkah kerja atau aktivitas (Non-Value-Adding) yang tidak perlu", C: "Memindahkan lokasi pabrik", D: "Menggabungkan dua departemen" },
+        answer: "B"
+    },
+    {
+        id: 45,
+        text: "Proses manajemen keluhan pelanggan dalam sebuah perusahaan jasa telekomunikasi termasuk dalam klasifikasi proses bisnis...",
+        options: { A: "Outsourcing", B: "Support Process", C: "Core Process", D: "Management Process" },
+        answer: "C"
+    },
+    {
+        id: 46,
+        text: "Suatu aktivitas dalam BPMN dapat memiliki penanda berupa tanda plus (+) di bagian tengah bawah kotaknya. Tanda ini menunjukkan bahwa aktivitas tersebut adalah sebuah...",
+        options: { A: "Collapsed Sub-process", B: "End Event", C: "Gateway kompleks", D: "Pekerjaan manual" },
+        answer: "A"
+    },
+    {
+        id: 47,
+        text: "Simbol Timer Event (lambang jam) di dalam BPMN digunakan untuk menggambarkan jalannya proses yang dipicu atau dibatasi oleh...",
+        options: { A: "Keputusan manajer", B: "Kesalahan sistem", C: "Waktu tertentu", D: "Ketersediaan dana" },
+        answer: "C"
+    },
+    {
+        id: 48,
+        text: "Mengurangi terjadinya pengulangan kerja (rework) yang disebabkan oleh kesalahan input data manual merupakan salah satu fokus perbaikan proses guna meningkatkan metrik...",
+        options: { A: "Kapasitas server", B: "Kualitas (Quality)", C: "Jumlah karyawan", D: "Estetika produk" },
+        answer: "B"
+    },
+    {
+        id: 49,
+        text: "Integrasi antara Sistem Informasi Manajemen (seperti CRM) dengan Proses Bisnis (seperti Order-to-Cash) sangat krusial karena Sistem Informasi berfungsi sebagai...",
+        options: { A: "Penghambat jalannya bisnis", B: "Alat (enabler) yang memungkinkan proses bisnis dieksekusi lebih cepat, akurat, dan dapat dilacak", C: "Pengganti semua tenaga manusia", D: "Pelindung fisik dari bencana" },
+        answer: "B"
+    },
+    {
+        id: 50,
+        text: "Secara esensial, tujuan akhir mahasiswa program studi Sistem Informasi mempelajari mata kuliah Proses Bisnis adalah agar kelak mampu...",
+        options: { A: "Menghafal teori ekonomi makro", B: "Menjadi pengembang perangkat keras", C: "Memahami logika aliran kerja, memodelkan BPMN, serta mengusulkan desain perbaikan proses yang selaras dengan TI", D: "Meniadakan aturan birokrasi" },
+        answer: "C"
+    }
+];
+    const soalWirausaha = [
+    { id: 1, text: "Kewirausahaan di era digital tidak hanya tentang membuka toko online, melainkan tentang pola pikir (mindset). Inti dari Digital Entrepreneurship adalah...", options: { A: "Mengubah semua proses manual menjadi menggunakan robot.", B: "Pemanfaatan teknologi digital untuk menciptakan nilai tambah, inovasi, dan efisiensi dalam model bisnis.", C: "Menghapus peran manusia dalam bisnis.", D: "Menjual perangkat keras komputer." }, answer: "B" },
+    { id: 2, text: "Revolusi Industri 4.0 dan menuju 5.0 menjadi latar belakang kewirausahaan digital. Karakteristik utama dari era ini yang harus diantisipasi wirausaha adalah...", options: { A: "Stabilitas pasar yang konstan.", B: "Disrupsi teknologi, konektivitas (IoT), dan Big Data.", C: "Penurunan penggunaan internet.", D: "Kembalinya sistem barter." }, answer: "B" },
+    { id: 3, text: "Dalam BMP, dijelaskan bahwa wirausaha harus memiliki Growth Mindset. Ciri khas seorang wirausaha digital yang memiliki Growth Mindset adalah...", options: { A: "Percaya bahwa bakat adalah bawaan lahir dan tidak bisa diubah.", B: "Menghindari tantangan karena takut gagal.", C: "Melihat kegagalan sebagai kesempatan untuk belajar dan berkembang (pivot).", D: "Merasa terancam dengan kesuksesan orang lain." }, answer: "C" },
+    { id: 4, text: "Perbedaan mendasar antara Pedagang biasa dengan Wirausaha (Entrepreneur) terletak pada aspek...", options: { A: "Jumlah modal yang dimiliki.", B: "Lokasi jualan.", C: "Kemampuan menciptakan inovasi dan nilai baru (Value Creation).", D: "Jam kerja." }, answer: "C" },
+    { id: 5, text: "Kreativitas dalam konteks kewirausahaan digital adalah...", options: { A: "Kemampuan mengimplementasikan ide menjadi produk nyata.", B: "Kemampuan memikirkan ide-ide baru dan orisinal (Thinking new things).", C: "Kemampuan meminjam uang di bank.", D: "Kemampuan meniru produk pesaing persis sama." }, answer: "B" },
+    { id: 6, text: "Inovasi dalam konteks kewirausahaan digital adalah...", options: { A: "Melamunkan ide-ide abstrak.", B: "Kemampuan melakukan atau mengimplementasikan ide-ide baru tersebut menjadi solusi yang bernilai ekonomis (Doing new things).", C: "Menggambar desain logo.", D: "Menulis puisi." }, answer: "B" },
+    { id: 7, text: "Model bisnis Freemium yang sering digunakan oleh startup digital (seperti Spotify atau Zoom) bekerja dengan cara...", options: { A: "Memberikan semua layanan secara gratis selamanya tanpa pendapatan.", B: "Memberikan layanan dasar secara gratis, namun mengenakan biaya untuk fitur premium/lanjutan.", C: "Mewajibkan pembayaran di muka sebelum mencoba produk.", D: "Menjual data pengguna secara ilegal." }, answer: "B" },
+    { id: 8, text: "Apa yang dimaksud dengan Digital Disruption (Disrupsi Digital) dalam dunia bisnis...", options: { A: "Gangguan sinyal internet saat berbisnis.", B: "Fenomena di mana teknologi digital mengubah secara fundamental cara bisnis beroperasi, seringkali menggantikan model bisnis lama.", C: "Kerusakan komputer di kantor.", D: "Serangan virus pada website." }, answer: "B" },
+    { id: 9, text: "Dalam merancang model bisnis (BMC), blok Value Propositions menjelaskan tentang...", options: { A: "Siapa target pasar kita.", B: "Bagaimana cara kita mendapatkan uang.", C: "Nilai atau manfaat unik apa yang kita tawarkan untuk memecahkan masalah pelanggan.", D: "Siapa mitra kerja kita." }, answer: "C" },
+    { id: 10, text: "Jika seorang mahasiswa menjual produk orang lain tanpa menyetok barang, dan pengiriman dilakukan langsung oleh suplier ke pembeli atas nama mahasiswa tersebut, model bisnis ini disebut...", options: { A: "Reseller.", B: "Dropship.", C: "Manufacturer.", D: "Franchisor." }, answer: "B" },
+    { id: 11, text: "Tahap pertama dalam Design Thinking untuk menciptakan inovasi adalah...", options: { A: "Prototype.", B: "Empathize (Berempati memahami kebutuhan pengguna).", C: "Define.", D: "Test." }, answer: "B" },
+    { id: 12, text: "Dalam pemasaran digital, istilah SEO (Search Engine Optimization) merujuk pada...", options: { A: "Membayar iklan agar muncul di halaman pertama Google.", B: "Mengoptimalkan website/konten agar muncul di peringkat atas pencarian organik mesin pencari.", C: "Mengirim email spam.", D: "Membuat video viral." }, answer: "B" },
+    { id: 13, text: "Konsep Long Tail Effect dalam bisnis digital menjelaskan bahwa...", options: { A: "Bisnis hanya untung jika menjual produk populer.", B: "Penjualan akumulatif dari produk niche dalam jumlah banyak bisa menyaingi produk hits.", C: "Ekor hewan panjang.", D: "Proses pengiriman yang lama." }, answer: "B" },
+    { id: 14, text: "Salah satu tantangan etika terbesar dalam kewirausahaan di era digital adalah...", options: { A: "Harga barang terlalu murah.", B: "Perlindungan privasi dan keamanan data pengguna (Data Privacy).", C: "Internet terlalu cepat.", D: "Terlalu banyak pilihan warna." }, answer: "B" },
+    { id: 15, text: "Crowdfunding (Urun Dana) adalah alternatif pendanaan di era digital di mana...", options: { A: "Pengusaha meminjam uang dari satu bank.", B: "Pengusaha mengumpulkan dana kecil dari banyak orang melalui platform internet.", C: "Pemerintah memberi hibah penuh.", D: "Pengusaha menjual aset pribadi." }, answer: "B" },
+    { id: 16, text: "Tahap membuat produk dengan fitur minimal namun cukup untuk menguji hipotesis pasar disebut...", options: { A: "Final Product.", B: "MVP (Minimum Viable Product).", C: "Prototype Alpha.", D: "Mockup." }, answer: "B" },
+    { id: 17, text: "Strategi pemasaran yang mengandalkan pembuatan konten relevan dan bermanfaat untuk menarik audiens disebut...", options: { A: "Telemarketing.", B: "Content Marketing.", C: "Direct Selling.", D: "Billboard Advertising." }, answer: "B" },
+    { id: 18, text: "Peluang usaha yang muncul dari tren Gig Economy adalah...", options: { A: "Menjadi karyawan tetap seumur hidup.", B: "Menjadi pekerja lepas (Freelancer) atau mitra platform.", C: "Membuka pabrik manufaktur.", D: "Menjadi PNS." }, answer: "B" },
+    { id: 19, text: "User Experience (UX) dalam produk digital berfokus pada...", options: { A: "Keindahan visual semata.", B: "Pengalaman, kemudahan, dan kepuasan pengguna saat berinteraksi dengan produk.", C: "Kode pemrograman.", D: "Harga aplikasi." }, answer: "B" },
+    { id: 20, text: "Faktor eksternal dalam analisis SWOT adalah...", options: { A: "Strength & Weakness.", B: "Opportunity & Threat.", C: "Strength & Opportunity.", D: "Weakness & Threat." }, answer: "B" },
+    { id: 21, text: "Dalam e-commerce, transaksi antara perusahaan dengan perusahaan lain (misal: produsen ke grosir) disebut...", options: { A: "B2C", B: "C2C", C: "B2B", D: "G2C" }, answer: "C" },
+    { id: 22, text: "Platform yang mempertemukan banyak penjual dan pembeli disebut model bisnis...", options: { A: "Toko Online Pribadi.", B: "Marketplace.", C: "Social Media.", D: "Blog." }, answer: "B" },
+    { id: 23, text: "KPI digital untuk mengukur seberapa banyak pengunjung website yang akhirnya melakukan pembelian disebut...", options: { A: "Traffic.", B: "Bounce Rate.", C: "Conversion Rate.", D: "Impression." }, answer: "C" },
+    { id: 24, text: "Pemanfaatan Artificial Intelligence (AI) dalam kewirausahaan digital dapat berupa...", options: { A: "Mengganti karyawan dengan robot fisik.", B: "Chatbot untuk layanan pelanggan otomatis.", C: "Menghapus data pelanggan.", D: "Mempersulit login." }, answer: "B" },
+    { id: 25, text: "Social Entrepreneurship di era digital bertujuan untuk...", options: { A: "Keuntungan pribadi.", B: "Memecahkan masalah sosial/lingkungan dengan pendekatan bisnis.", C: "Meminta sumbangan.", D: "Menghindari pajak." }, answer: "B" },
+    { id: 26, text: "Perusahaan startup dengan valuasi lebih dari 1 Miliar USD disebut...", options: { A: "Kuda.", B: "Unicorn.", C: "Startup baru.", D: "Bangkrut." }, answer: "B" },
+    { id: 27, text: "Hak eksklusif bagi pencipta kode program komputer atau konten kreatif disebut...", options: { A: "Paten.", B: "Hak Cipta (Copyright).", C: "Merek Dagang.", D: "Rahasia Dagang." }, answer: "B" },
+    { id: 28, text: "Strategi yang mengintegrasikan berbagai saluran (offline dan online) disebut...", options: { A: "Offline only.", B: "Online only.", C: "Omnichannel.", D: "Close all sales." }, answer: "C" },
+    { id: 29, text: "Big Data memberikan keuntungan bagi wirausaha berupa...", options: { A: "Memenuhi memori.", B: "Menganalisis perilaku konsumen untuk keputusan akurat.", C: "Membuat komputer lambat.", D: "Menambah biaya listrik." }, answer: "B" },
+    { id: 30, text: "Penipuan dengan menyamar sebagai institusi resmi untuk mencuri data disebut...", options: { A: "Hacking.", B: "Phishing.", C: "Spamming.", D: "Blogging." }, answer: "B" },
+    { id: 31, text: "Payment Gateway memudahkan wirausaha dalam hal...", options: { A: "Pinjam uang.", B: "Menerima berbagai metode pembayaran online secara aman.", C: "Cetak uang.", D: "Hindari audit." }, answer: "B" },
+    { id: 32, text: "Proses meningkatkan kapasitas bisnis untuk tumbuh besar secara eksponensial disebut...", options: { A: "Start-up.", B: "Scaling Up.", C: "Closing.", D: "Downsizing." }, answer: "B" },
+    { id: 33, text: "Model Affiliate Marketing adalah...", options: { A: "Produk sendiri.", B: "Mempromosikan produk orang lain dan dapat komisi.", C: "Saham.", D: "Karyawan tetap." }, answer: "B" },
+    { id: 34, text: "Karakteristik Adaptabilitas penting bagi wirausaha karena...", options: { A: "Tren pasar berubah cepat.", B: "Meniru orang lain.", C: "Tidak perlu rencana.", D: "Disukai karyawan." }, answer: "A" },
+    { id: 35, text: "Dalam BMC, cara menjalin hubungan dan mempertahankan pelanggan disebut...", options: { A: "Logistik.", B: "Customer Relationships.", C: "Biaya.", D: "Mitra." }, answer: "B" },
+    { id: 36, text: "Strategi untuk menciptakan pasar baru yang belum terjamah pesaing adalah...", options: { A: "Red Ocean.", B: "Blue Ocean Strategy.", C: "Low Price Strategy.", D: "Acquisition." }, answer: "B" },
+    { id: 37, text: "Media sosial seperti Instagram sangat efektif untuk bisnis kategori...", options: { A: "B2B alat berat.", B: "Fashion, kuliner, dan gaya hidup.", C: "Bahan kimia.", D: "Surat tanah." }, answer: "B" },
+    { id: 38, text: "Membangun bisnis dengan modal sendiri yang minim disebut...", options: { A: "Bootstrap.", B: "Investor.", C: "Pinjaman.", D: "Bantuan." }, answer: "A" },
+    { id: 39, text: "Influencer Marketing memanfaatkan...", options: { A: "Iklan koran.", B: "Tokoh berpengaruh di media sosial.", C: "Spam email.", D: "Brosur." }, answer: "B" },
+    { id: 40, text: "Salah satu indikator ekonomi dari kewirausahaan digital adalah...", options: { A: "Pengangguran.", B: "Terbukanya lapangan kerja baru.", C: "Menurunnya daya beli.", D: "Pasar tradisional hilang." }, answer: "B" },
+    { id: 41, text: "Alat untuk melihat performa website kompetitor adalah...", options: { A: "MS Word.", B: "SimilarWeb atau Google Trends.", C: "Kalkulator.", D: "Photoshop." }, answer: "B" },
+    { id: 42, text: "Model menyewakan kamar atau barang yang kurang terpakai disebut...", options: { A: "Buying.", B: "Sharing Economy.", C: "Stok barang.", D: "Hotel." }, answer: "B" },
+    { id: 43, text: "Profil pelanggan ideal secara fiksi namun berbasis data disebut...", options: { A: "Daftar nama.", B: "Customer Persona.", C: "Syarat bank.", D: "Hiasan." }, answer: "B" },
+    { id: 44, text: "Contoh biaya variabel (Variable Cost) adalah...", options: { A: "Sewa domain.", B: "Gaji tetap.", C: "Biaya pengemasan/packing.", D: "Laptop." }, answer: "C" },
+    { id: 45, text: "Pivot dalam startup dilakukan ketika...", options: { A: "Bisnis untung.", B: "Produk tidak sesuai pasar/ganti strategi.", C: "Bosan.", D: "Liburan." }, answer: "B" },
+    { id: 46, text: "Undang-Undang di Indonesia yang mengatur transaksi digital adalah...", options: { A: "UU Agraria.", B: "UU ITE.", C: "UU Perkawinan.", D: "UU Lalu Lintas." }, answer: "B" },
+    { id: 47, text: "Keuntungan Cloud Computing bagi pemula adalah...", options: { A: "Beli server.", B: "Fleksibilitas biaya tanpa investasi infrastruktur besar.", C: "Data tidak aman.", D: "Ruang ber-AC." }, answer: "B" },
+    { id: 48, text: "Viral Loop bertujuan agar...", options: { A: "Pengguna mengajak pengguna baru secara otomatis.", B: "Virus.", C: "Penjualan berhenti.", D: "Mengurangi pengguna." }, answer: "A" },
+    { id: 49, text: "Pitch Deck kepada investor harus memuat...", options: { A: "Curhat.", B: "Masalah, Solusi, Model Bisnis, dan Tim.", C: "Novel.", D: "Video liburan." }, answer: "B" },
+    { id: 50, text: "Tujuan akhir mata kuliah Kewirausahaan Era Digital adalah...", options: { A: "Menjadi karyawan.", B: "Takut risiko.", C: "Mampu berpikir kreatif/inovatif untuk menciptakan nilai.", D: "Menghafal." }, answer: "C" }
+
+];
+
+
+        // FUNGSI SEMENTARA: Membuat 50 Soal Dummy
+        // Nanti akan diganti dengan data asli dari PDF Anda
+        function generateDummyQuestions(subjectName) {
+            let dummy = [];
+            const jawabanBenarAcak = ['A', 'B', 'C', 'D'];
+            for (let i = 1; i <= 50; i++) {
+                dummy.push({
+                    id: i,
+                    text: `(Ini adalah Soal Contoh) Pertanyaan nomor ${i} untuk ujian ${subjectName}. Pilihlah jawaban yang paling tepat dari pilihan di bawah ini.`,
+                    options: {
+                        A: `Pilihan A untuk soal ${i}. Ini merupakan kalimat pengecoh pertama.`,
+                        B: `Pilihan B untuk soal ${i}. Ini merupakan kalimat pengecoh kedua.`,
+                        C: `Pilihan C untuk soal ${i}. Jawaban mungkin ada di sini.`,
+                        D: `Pilihan D untuk soal ${i}. Atau mungkin ini jawaban yang benar.`
+                    },
+                    answer: jawabanBenarAcak[Math.floor(Math.random() * 4)] // Kunci jawaban acak
+                });
+            }
+            return dummy;
+        }
+
+        function renderDashboard() {
+            const list = document.getElementById('subject-list');
+            list.innerHTML = '';
+
+            mataKuliah.forEach(mk => {
+                const card = document.createElement('div');
+                card.className = 'subject-card bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer flex flex-col h-full';
+                card.onclick = () => bukaKuis(mk.id);
+                
+                card.innerHTML = `
+                    <div class="p-6 flex-grow flex items-start space-x-5">
+                        <div class="${mk.colorClass} text-white w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-sm">
+                            <i class="fas ${mk.icon}"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-gray-400 tracking-wider uppercase">${mk.kode}</span>
+                            <h3 class="text-xl font-bold text-gray-800 leading-tight mt-1 mb-2">${mk.nama}</h3>
+                            <span class="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded font-medium"><i class="far fa-file-alt mr-1"></i> 50 Pilihan Ganda</span>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50/50 px-6 py-4 border-t border-gray-100 mt-auto group">
+                        <button class="w-full text-blue-600 font-bold group-hover:text-blue-800 transition-colors flex justify-between items-center">
+                            Mulai Latihan <i class="fas fa-arrow-right text-sm transform group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function bukaKuis(idMataKuliah) {
+            currentSubject = mataKuliah.find(m => m.id === idMataKuliah);
+            
+            // Reset state untuk ujian baru
+            currentQuestionIndex = 0;
+            userAnswers = {};
+
+            // Cek apakah yang dipilih adalah Sistem Informasi Manajemen (STSI4207)
+if (idMataKuliah === 'STSI4207') {
+    questionsData = soalSIM;
+}
+else if (idMataKuliah === 'STSI4102') {
+    questionsData = soalAlgoritma;
+}
+else if (idMataKuliah === 'STSI4206') {
+        questionsData = soalProsesBisnis; 
+    } 
+else if (idMataKuliah === 'MKDI4203') {
+        questionsData = soalWirausaha; 
+    }
+else {
+    questionsData = generateDummyQuestions(currentSubject.nama);
+}
+            
+            // Set Text Header
+            document.getElementById('quiz-title').innerText = currentSubject.nama;
+            document.getElementById('quiz-code').innerText = currentSubject.kode;
+
+            // Tampilkan View
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('quiz-view').classList.remove('hidden');
+
+            // Render UI Ujian
+            renderQuestion();
+            renderGrid();
+            mulaiTimer();
+            window.scrollTo(0, 0);
+        }
+
+        function renderQuestion() {
+            const q = questionsData[currentQuestionIndex];
+            
+            document.getElementById('question-number-text').innerText = `Soal No. ${currentQuestionIndex + 1}`;
+            document.getElementById('question-text').innerText = q.text;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            for (const [key, text] of Object.entries(q.options)) {
+                const userAnswer = userAnswers[currentQuestionIndex];
+                const isAnswered = userAnswer !== undefined;
+                const isCorrectAnswer = key === q.answer;
+                const isSelected = userAnswer === key;
+                
+                const btn = document.createElement('button');
+                
+                // Styling dinamis dengan evaluasi instan (Benar = Hijau, Salah = Merah)
+                let baseClass = 'option-btn w-full text-left p-4 rounded-xl border-2 flex items-start gap-4 focus:outline-none transition-all ';
+                let letterClass = 'option-letter flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-sm transition-colors ';
+                let textClass = 'pt-1 font-medium leading-relaxed ';
+                
+                if (isAnswered) {
+                    // Kunci tombol jika sudah dijawab
+                    btn.disabled = true;
+                    btn.style.cursor = 'default';
+                    
+                    if (isCorrectAnswer) {
+                        // Jawaban Benar (selalu dihijaukan)
+                        baseClass += 'bg-green-50 border-green-500 text-green-900 shadow-sm';
+                        letterClass += 'bg-green-500 border-green-500 text-white';
+                        textClass += 'text-green-800';
+                    } else if (isSelected && !isCorrectAnswer) {
+                        // Jawaban yang dipilih salah (dimerahkan)
+                        baseClass += 'bg-red-50 border-red-500 text-red-900';
+                        letterClass += 'bg-red-500 border-red-500 text-white';
+                        textClass += 'text-red-800';
+                    } else {
+                        // Opsi sisanya yang tidak dipilih diredupkan
+                        baseClass += 'border-gray-200 opacity-50 bg-gray-50';
+                        letterClass += 'border-gray-300 text-gray-400';
+                        textClass += 'text-gray-500';
+                    }
+                } else {
+                    // Kondisi belum dijawab
+                    baseClass += 'border-gray-200 hover:border-blue-300 hover:bg-blue-50 cursor-pointer';
+                    letterClass += 'border-gray-300 text-gray-500';
+                    textClass += 'text-gray-700';
+                    
+                    // Tambahkan event click hanya jika belum dijawab
+                    btn.onclick = () => pilihJawaban(key);
+                }
+                
+                btn.className = baseClass;
+
+                btn.innerHTML = `
+                    <div class="${letterClass}">
+                        ${key}
+                    </div>
+                    <div class="${textClass}">
+                        ${text}
+                    </div>
+                `;
+                container.appendChild(btn);
+            }
+
+            // Atur status Tombol Prev & Next
+            document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
+            
+            const btnNext = document.getElementById('btn-next');
+            if (currentQuestionIndex === questionsData.length - 1) {
+                btnNext.innerHTML = 'Selesai <i class="fas fa-flag-checkered ml-2"></i>';
+                btnNext.className = 'px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold transition-all shadow-sm shadow-green-600/30';
+            } else {
+                btnNext.innerHTML = 'Selanjutnya <i class="fas fa-chevron-right ml-2"></i>';
+                btnNext.className = 'px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold transition-all shadow-sm shadow-blue-600/30';
+            }
+
+            updateGridSelection();
+        }
+
+        function pilihJawaban(kunci) {
+            userAnswers[currentQuestionIndex] = kunci;
+            renderQuestion(); // Render ulang opsi untuk beri warna biru
+            renderGrid();     // Render ulang grid untuk beri warna hijau
+        }
+
+        function bersihkanJawaban() {
+            delete userAnswers[currentQuestionIndex];
+            renderQuestion();
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('question-grid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < questionsData.length; i++) {
+                const btn = document.createElement('button');
+                const isAnswered = userAnswers[i] !== undefined;
+                
+                let baseClass = 'q-number w-full aspect-square rounded-lg font-bold text-sm flex items-center justify-center border-2 ';
+                if(isAnswered) baseClass += 'answered';
+                else baseClass += 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100';
+
+                btn.className = baseClass;
+                btn.id = `grid-btn-${i}`;
+                btn.innerText = i + 1;
+                btn.onclick = () => {
+                    currentQuestionIndex = i;
+                    renderQuestion();
+                };
+                grid.appendChild(btn);
+            }
+            updateGridSelection();
+        }
+
+        function updateGridSelection() {
+            // Hapus cincin biru (indikator aktif) dari semua tombol grid
+            document.querySelectorAll('.q-number').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-blue-200', 'border-blue-500');
+                // Restore border if not answered
+                if(!btn.classList.contains('answered')) {
+                    btn.classList.add('border-gray-200');
+                }
+            });
+            // Beri cincin biru pada soal yang sedang dibuka
+            const activeBtn = document.getElementById(`grid-btn-${currentQuestionIndex}`);
+            if(activeBtn) {
+                activeBtn.classList.add('ring-4', 'ring-blue-200', 'border-blue-500');
+                activeBtn.classList.remove('border-gray-200');
+            }
+        }
+
+        function soalSelanjutnya() {
+            if (currentQuestionIndex < questionsData.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                konfirmasiSelesai();
+            }
+        }
+
+        function soalSebelumnya() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        // --- TIMER ---
+        function mulaiTimer() {
+            timeLeft = 90 * 60; // Set 90 Menit
+            clearInterval(timerInterval);
+            updateTampilanWaktu();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTampilanWaktu();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    bukaModalKonfirmasi(
+                        "Waktu Habis!", 
+                        "Waktu ujian 90 menit telah habis. Ujian akan diakhiri otomatis.", 
+                        "Lihat Nilai", 
+                        () => hitungDanTampilkanNilai()
+                    );
+                }
+            }, 1000);
+        }
+
+        function updateTampilanWaktu() {
+            const menit = Math.floor(timeLeft / 60);
+            const detik = timeLeft % 60;
+            document.getElementById('time-text').innerText = 
+                `${menit.toString().padStart(2, '0')}:${detik.toString().padStart(2, '0')}`;
+            
+            // Ubah warna merah jika sisa < 5 menit
+            const timerDisplay = document.getElementById('timer-display');
+            if(timeLeft < 300) {
+                timerDisplay.classList.replace('text-blue-800', 'text-red-600');
+                timerDisplay.classList.replace('border-blue-200', 'border-red-200');
+                timerDisplay.querySelector('i').classList.replace('text-blue-500', 'text-red-500');
+            }
+        }
+
+        // --- MANAJEMEN MODAL CUSTOM ---
+        function bukaModalKonfirmasi(judul, pesan, teksTombol, callback) {
+            document.getElementById('confirm-title').innerText = judul;
+            document.getElementById('confirm-message').innerText = pesan;
+            const btnYa = document.getElementById('btn-confirm-action');
+            btnYa.innerText = teksTombol;
+            btnYa.onclick = () => {
+                tutupModalKonfirmasi();
+                callback();
+            };
+            
+            const modal = document.getElementById('confirm-modal');
+            const content = document.getElementById('confirm-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { content.classList.replace('scale-95', 'scale-100'); }, 10);
+        }
+
+        function tutupModalKonfirmasi() {
+            const modal = document.getElementById('confirm-modal');
+            const content = document.getElementById('confirm-content');
+            content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => { modal.classList.add('hidden'); }, 200);
+        }
+
+        // --- LOGIKA SELESAI ---
+        function konfirmasiKembali() {
+            bukaModalKonfirmasi(
+                "Kembali ke Dashboard?", 
+                "Progres jawaban Anda pada ujian ini akan hilang.", 
+                "Ya, Kembali", 
+                () => {
+                    clearInterval(timerInterval);
+                    document.getElementById('quiz-view').classList.add('hidden');
+                    document.getElementById('dashboard-view').classList.remove('hidden');
+                }
+            );
+        }
+
+        function konfirmasiSelesai() {
+            const jumlahDijawab = Object.keys(userAnswers).length;
+            const belumDijawab = questionsData.length - jumlahDijawab;
+            
+            let pesan = "Apakah Anda yakin ingin mengakhiri ujian ini?";
+            if (belumDijawab > 0) {
+                pesan = `Terdapat ${belumDijawab} soal yang belum Anda jawab. ${pesan}`;
+            }
+
+            bukaModalKonfirmasi("Akhiri Ujian", pesan, "Ya, Kumpulkan", () => hitungDanTampilkanNilai());
+        }
+
+        function hitungDanTampilkanNilai() {
+            clearInterval(timerInterval); // Stop timer
+            
+            let jumlahBenar = 0;
+            // Evaluasi jawaban
+            questionsData.forEach((q, index) => {
+                if (userAnswers[index] === q.answer) {
+                    jumlahBenar++;
+                }
+            });
+
+            const total = questionsData.length;
+            const jumlahSalah = total - jumlahBenar;
+            const nilaiAkhir = Math.round((jumlahBenar / total) * 100);
+
+            // Update UI Modal Hasil
+            document.getElementById('final-score').innerText = nilaiAkhir;
+            document.getElementById('correct-count').innerText = jumlahBenar;
+            document.getElementById('wrong-count').innerText = jumlahSalah;
+
+            // Ganti warna teks nilai berdasarkan skor
+            const scoreEl = document.getElementById('final-score');
+            scoreEl.className = 'text-6xl font-black mb-4 drop-shadow-sm ';
+            if(nilaiAkhir >= 80) scoreEl.className += 'text-green-600';
+            else if(nilaiAkhir >= 60) scoreEl.className += 'text-blue-600';
+            else scoreEl.className += 'text-red-600';
+
+            // Tampilkan Modal
+            const modal = document.getElementById('result-modal');
+            const content = document.getElementById('result-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => { content.classList.replace('scale-95', 'scale-100'); }, 10);
+        }
+
+        function tutupHasilDanKembali() {
+            document.getElementById('result-modal').classList.add('hidden');
+            document.getElementById('quiz-view').classList.add('hidden');
+            document.getElementById('dashboard-view').classList.remove('hidden');
+            
+            // Reset timer display warnanya
+            const timerDisplay = document.getElementById('timer-display');
+            timerDisplay.classList.replace('text-red-600', 'text-blue-800');
+            timerDisplay.classList.replace('border-red-200', 'border-blue-200');
+            timerDisplay.querySelector('i').classList.replace('text-red-500', 'text-blue-500');
+        }
+
+        // Jalankan Render Awal
+        renderDashboard();
+    </script>
+    <footer class="mt-12 mb-6 text-center text-gray-500 text-sm">
+        &copy; 2026 Soal Latihan UAS Sistem Informasi UT by Sodikin M.
+</body>
+</html>
